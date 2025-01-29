@@ -12,11 +12,21 @@ const registerUser = async (
 ) => {
   try {
     const result = await AuthServices.registerUser(req.body);
+    const { refreshToken, ...userInfo } = result;
+
+    const cookieOptions = {
+      secure: config.NODE_ENV === "development",
+      httpOnly: true,
+      sameSite: true,
+    };
+
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
     sendResponse(res, {
       statusCode: 201,
       success: true,
       message: "User registered successfully!",
-      data: result,
+      data: userInfo,
     });
   } catch (error) {
     next(error);
@@ -30,8 +40,9 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
     const { refreshToken, accessToken } = result;
 
     const cookieOptions = {
-      secure: config.NODE_ENV === "production",
+      secure: config.NODE_ENV === "development",
       httpOnly: true,
+      sameSite: true,
     };
 
     res.cookie("refreshToken", refreshToken, cookieOptions);

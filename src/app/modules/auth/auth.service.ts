@@ -13,9 +13,7 @@ import config from "../../config";
 import { Secret } from "jsonwebtoken";
 
 // register user
-const registerUser = async (
-  payload: Partial<IUser>
-): Promise<Partial<IUser>> => {
+const registerUser = async (payload: Partial<IUser>) => {
   const existingUser = await User.findOne({ email: payload.email });
 
   if (existingUser) {
@@ -23,12 +21,29 @@ const registerUser = async (
   }
 
   payload.password = await hashedPassword(payload.password as string);
+  payload.passwordConfirm = await hashedPassword(
+    payload.passwordConfirm as string
+  );
 
   const user = await User.create(payload);
+
+  const accessToken = jwtHelpers.createToken(
+    { id: user._id, email: user.email },
+    config.jwt.secret as Secret,
+    config.jwt.expires_in as string
+  );
+
+  const refreshToken = jwtHelpers.createToken(
+    { id: user._id, email: user.email },
+    config.jwt.refresh_secret as Secret,
+    config.jwt.refresh_expires_in as string
+  );
 
   return {
     name: user.name,
     email: user.email,
+    accessToken,
+    refreshToken,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
