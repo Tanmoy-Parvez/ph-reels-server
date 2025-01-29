@@ -4,7 +4,7 @@ import config from "../../config";
 import sendResponse from "../../utils/sendResponse";
 import { ILoginResponse, IRefreshTokenResponse } from "./auth.interface";
 
-// register user
+//register user
 const registerUser = async (
   req: Request,
   res: Response,
@@ -58,8 +58,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-// refresh access token
-
+//refresh & access token
 const refreshToken = async (
   req: Request,
   res: Response,
@@ -81,7 +80,7 @@ const refreshToken = async (
     sendResponse<IRefreshTokenResponse>(res, {
       statusCode: 200,
       success: true,
-      message: "Access token generated!",
+      message: "New access token generated!",
       data: result,
     });
   } catch (error) {
