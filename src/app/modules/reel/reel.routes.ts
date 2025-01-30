@@ -19,5 +19,6 @@ router.post(
 );
 
 router.post("/like/:id", auth, ReelController.likeReel);
+router.delete("/:id", auth, ReelController.deleteReelById);
 
 export const reelRoutes = router;

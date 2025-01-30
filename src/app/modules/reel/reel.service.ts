@@ -17,7 +17,6 @@ const uploadReel = async (
   const { title, description } = data;
   const timestamp = Date.now();
   const compressedVideoFileName = `videos/${timestamp}_${file.originalname}`;
-  const thumbnailFileName = `thumbnails/${timestamp}_thumbnail.png`;
 
   try {
     const compressedBuffer = await compressVideo(file.buffer);
@@ -28,13 +27,11 @@ const uploadReel = async (
     );
 
     const videoPublicUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${compressedVideoFileName}`;
-    const thumbnailUrl = `${process.env.MINIO_PUBLIC_URL}/${bucketName}/${thumbnailFileName}`;
 
     const reel = new Reel({
       title,
       description,
       video_url: videoPublicUrl,
-      thumbnail: thumbnailUrl,
       author: authUser.id,
     });
 
@@ -42,7 +39,6 @@ const uploadReel = async (
     return reel;
   } catch (error) {
     await minioClient.removeObject(bucketName, compressedVideoFileName);
-    await minioClient.removeObject(bucketName, thumbnailFileName);
 
     throw new AppError(StatusCodes.BAD_REQUEST, `Error uploading`);
   }
@@ -233,10 +229,48 @@ const getReelAnalytics = async (
     throw new Error(`Error fetching analytics`);
   }
 };
+
+const deleteReel = async (reelId: string, authUser: JwtPayload) => {
+  try {
+    const reel = await Reel.findById(reelId);
+
+    if (!reel) {
+      throw new AppError(StatusCodes.NOT_FOUND, "Reel not found!");
+    }
+
+    if (reel.author.toString() !== authUser.id) {
+      throw new AppError(
+        StatusCodes.FORBIDDEN,
+        "Unauthorized to delete this reel."
+      );
+    }
+
+    const videoPath = reel.video_url.split(`${bucketName}/`)[1];
+    if (videoPath) {
+      await minioClient.removeObject(bucketName, videoPath);
+    }
+
+    await Like.deleteMany({ videoId: reelId });
+
+    const result = await Reel.findByIdAndDelete(reelId);
+
+    await redis.del(`video:${reelId}`);
+    await redis.del(`videos:page-1:limit-10`);
+
+    return result;
+  } catch (error) {
+    throw new AppError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      "Error deleting the reel"
+    );
+  }
+};
+
 export const ReelService = {
   uploadReel,
   getAllReels,
   getReelById,
   likeReel,
   getReelAnalytics,
+  deleteReel,
 };
