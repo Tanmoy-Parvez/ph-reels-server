@@ -20,7 +20,6 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 
     const { id } = decoded;
 
-    // Check if user exists in the database using Mongoose
     const user = await User.findById(id).select("id");
 
     if (!user) {
@@ -30,6 +29,6 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
     req.user = decoded;
     next();
   } catch (error) {
-    next(error); // Pass any error to the error-handling middleware
+    next(error);
   }
 };

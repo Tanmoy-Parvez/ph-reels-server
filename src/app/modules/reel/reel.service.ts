@@ -70,7 +70,7 @@ const getAllReels = async (query: Record<string, unknown>) => {
 
   const result = {
     meta,
-    videos: reels,
+    reels,
   };
 
   await redis.setex(cacheKey, 60, JSON.stringify(result));
@@ -127,15 +127,12 @@ const likeReel = async (videoId: string, authUser: JwtPayload) => {
   const likeKey = `video_like:${videoId}:${authUser.id}`;
   const cacheKey = `video:${videoId}`;
 
-  // Check if user already liked the video
   const hasLiked = await Like.exists({ videoId: videoId, userId: authUser.id });
 
   try {
     if (hasLiked) {
-      // Remove like
       await Like.deleteOne({ videoId, userId: authUser.id });
 
-      // Decrement like count on video
       reel.likes -= 1;
       await reel.save();
 
@@ -145,13 +142,11 @@ const likeReel = async (videoId: string, authUser: JwtPayload) => {
       return {
         message: "Reel unliked successfully",
         videoId,
-        likeCount: reel.likes,
+        liked: false,
       };
     } else {
-      // Add like
       await Like.create({ videoId, userId: authUser.id });
 
-      // Increment like count on video
       reel.likes += 1;
       await reel.save();
 
@@ -161,7 +156,7 @@ const likeReel = async (videoId: string, authUser: JwtPayload) => {
       return {
         message: "Reel liked successfully",
         videoId,
-        likeCount: reel.likes,
+        liked: true,
       };
     }
   } catch (error) {
