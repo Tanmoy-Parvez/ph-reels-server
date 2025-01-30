@@ -96,9 +96,31 @@ const likeReel = async (req: Request, res: Response) => {
   }
 };
 
+const getReelAnalytics = async (req: Request, res: Response) => {
+  try {
+    // Get analytics data for the user's profile
+    const result = await ReelService.getReelAnalytics(req.user, req.query);
+
+    // Send successful response with the retrieved data
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Analytics retrieved successfully",
+      data: result,
+    });
+  } catch (error) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: `Error retrieving analytics`,
+    });
+  }
+};
+
 export const ReelController = {
   uploadReel,
   getAllReels,
   getReelById,
   likeReel,
+  getReelAnalytics,
 };

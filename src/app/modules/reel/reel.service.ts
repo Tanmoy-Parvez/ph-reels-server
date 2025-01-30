@@ -7,6 +7,7 @@ import redis from "../../utils/redisClient";
 import { compressVideo } from "./reel.utils";
 import minioClient, { bucketName } from "../../utils/minioClient";
 import Like from "../like/like.model";
+import { Types } from "mongoose";
 
 const uploadReel = async (
   file: File,
@@ -63,7 +64,7 @@ const getAllReels = async (query: Record<string, unknown>) => {
     .skip(skip)
     .limit(limit)
     .sort({ createdAt: "desc" })
-    .populate("author");
+    .populate("author", "name email _id");
 
   const meta = {
     page,
@@ -73,7 +74,7 @@ const getAllReels = async (query: Record<string, unknown>) => {
 
   const result = {
     meta,
-    data: reels,
+    videos: reels,
   };
 
   await redis.setex(cacheKey, 60, JSON.stringify(result));
@@ -175,9 +176,67 @@ const likeReel = async (videoId: string, authUser: JwtPayload) => {
   }
 };
 
+const getReelAnalytics = async (
+  authUser: JwtPayload,
+  query: Record<string, unknown>
+): Promise<any> => {
+  const { dateRange } = query;
+  const userId = authUser.id;
+
+  const dateFilter: any = {};
+
+  if (dateRange) {
+    const now = new Date();
+    switch (dateRange) {
+      case "last7d":
+        dateFilter.$gte = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case "last30d":
+        dateFilter.$gte = new Date(now.setDate(now.getDate() - 30));
+        break;
+      case "last1year":
+        dateFilter.$gte = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      default:
+        break;
+    }
+  }
+
+  try {
+    const videoStats = await Reel.aggregate([
+      {
+        $match: {
+          author: new Types.ObjectId(userId),
+          ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalViews: { $sum: "$views" },
+          totalUploads: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const likeStats = await Like.countDocuments({
+      userId,
+      ...(Object.keys(dateFilter).length ? { createdAt: dateFilter } : {}),
+    });
+
+    return {
+      totalViews: videoStats[0]?.totalViews || 0,
+      totalLikes: likeStats || 0,
+      totalUploads: videoStats[0]?.totalUploads || 0,
+    };
+  } catch (error) {
+    throw new Error(`Error fetching analytics`);
+  }
+};
 export const ReelService = {
   uploadReel,
   getAllReels,
   getReelById,
   likeReel,
+  getReelAnalytics,
 };
