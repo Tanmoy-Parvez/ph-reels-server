@@ -2,6 +2,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Application } from "express";
 import { authRoutes } from "./app/modules/auth/auth.routes";
+import globalErrorHandler from "./app/middlewares/globalErrorHandler";
+import notFound from "./app/middlewares/notFound";
 
 const app: Application = express();
 
@@ -16,5 +18,10 @@ app.use("/api/v1/auth", authRoutes);
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
+
+app.use(globalErrorHandler);
+
+//Not Found
+app.use(notFound);
 
 export default app;
