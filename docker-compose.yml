@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  ph-reels-server:
+    build: .
+    container_name: ph-reels-server
+    restart: always
+    depends_on:
+      - redis
+      - minio
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - ph-reels-network
+
+  redis:
+    image: redis:7
+    container_name: ph-reels-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - ph-reels-network
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: ph-reels-minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - ph-reels-network
+
+  ffmpeg:
+    image: jrottenberg/ffmpeg:latest
+    container_name: ph-reels-ffmpeg
+    restart: always
+    networks:
+      - ph-reels-network
+
+volumes:
+  minio_data:
+
+networks:
+  ph-reels-network:
+    driver: bridge
