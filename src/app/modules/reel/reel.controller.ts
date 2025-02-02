@@ -10,8 +10,6 @@ const uploadReel = async (req: Request, res: Response) => {
       throw new AppError(400, "File is required!");
     }
 
-    console.log("user: ", req.user);
-
     const result = await ReelService.uploadReel(file, req.body, req.user);
     sendResponse(res, {
       statusCode: 201,
