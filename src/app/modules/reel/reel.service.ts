@@ -14,9 +14,9 @@ const uploadReel = async (
   data: IReelPayload,
   authUser: JwtPayload
 ) => {
-  const { title, description } = data;
+  const { title } = data;
   const timestamp = Date.now();
-  const compressedVideoFileName = `videos/${timestamp}_${file.originalname}`;
+  const compressedVideoFileName = `/${timestamp}_${file.originalname}`;
 
   try {
     const compressedBuffer = await compressVideo(file.buffer);
@@ -30,7 +30,6 @@ const uploadReel = async (
 
     const reel = new Reel({
       title,
-      description,
       video_url: videoPublicUrl,
       author: authUser.id,
     });
@@ -185,7 +184,7 @@ const getReelAnalytics = async (
       case "last30d":
         dateFilter.$gte = new Date(now.setDate(now.getDate() - 30));
         break;
-      case "last1year":
+      case "last1yr":
         dateFilter.$gte = new Date(now.setFullYear(now.getFullYear() - 1));
         break;
       default:

@@ -23,7 +23,7 @@ const registerUser = async (payload: Partial<IUser>) => {
   const user = await User.create(payload);
 
   const accessToken = jwtHelpers.createToken(
-    { id: user._id, email: user.email },
+    { id: user._id, email: user.email, name: user.name },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
@@ -53,7 +53,7 @@ const loginUser = async (payload: ILogin): Promise<ILoginResponse> => {
   }
 
   const accessToken = jwtHelpers.createToken(
-    { id: user._id, email: user.email },
+    { id: user._id, email: user.email, name: user.name },
     config.jwt.secret as Secret,
     config.jwt.expires_in as string
   );
