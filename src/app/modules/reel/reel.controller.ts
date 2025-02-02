@@ -96,9 +96,48 @@ const likeReel = async (req: Request, res: Response) => {
   }
 };
 
+const getReelAnalytics = async (req: Request, res: Response) => {
+  try {
+    const result = await ReelService.getReelAnalytics(req.user, req.query);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Analytics retrieved successfully",
+      data: result,
+    });
+  } catch (error) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: `Error retrieving analytics`,
+    });
+  }
+};
+
+const deleteReelById = async (req: Request, res: Response) => {
+  try {
+    await ReelService.deleteReel(req.params.id, req.user);
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: "Reel Deleted successfully",
+    });
+  } catch (error) {
+    sendResponse(res, {
+      statusCode: 500,
+      success: false,
+      message: "An error occurred while deleting the reel.",
+    });
+  }
+};
+
 export const ReelController = {
   uploadReel,
   getAllReels,
   getReelById,
   likeReel,
+  getReelAnalytics,
+  deleteReelById,
 };

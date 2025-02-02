@@ -7,6 +7,7 @@ import { auth } from "../../middlewares/auth";
 const router = express.Router();
 
 router.get("/", ReelController.getAllReels);
+router.get("/analytics", auth, ReelController.getReelAnalytics);
 router.get("/:id", ReelController.getReelById);
 
 router.post(
@@ -18,5 +19,6 @@ router.post(
 );
 
 router.post("/like/:id", auth, ReelController.likeReel);
+router.delete("/:id", auth, ReelController.deleteReelById);
 
 export const reelRoutes = router;

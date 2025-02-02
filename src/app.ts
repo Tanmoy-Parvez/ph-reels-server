@@ -8,22 +8,22 @@ import notFound from "./app/middlewares/notFound";
 
 const app: Application = express();
 
-// middlewares
+//middlewares
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+//routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/reel", reelRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Welcome To PH Reel Server");
 });
 
+//middlewares
 app.use(globalErrorHandler);
-
-//Not Found
 app.use(notFound);
 
 export default app;
