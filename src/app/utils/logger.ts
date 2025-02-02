@@ -21,8 +21,8 @@ const logger = createLogger({
         process.cwd(),
         "logs",
         "winston",
-        "successes",
-        "phu-%DATE%-success.log"
+        "success",
+        "%DATE%-success.log"
       ),
       datePattern: "YYYY-DD-MM-HH",
       zippedArchive: true,
@@ -43,7 +43,7 @@ const errorLogger = createLogger({
         "logs",
         "winston",
         "errors",
-        "phu-%DATE%-error.log"
+        "%DATE%-error.log"
       ),
       datePattern: "YYYY-DD-MM-HH",
       zippedArchive: true,
