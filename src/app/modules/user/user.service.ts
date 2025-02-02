@@ -1,12 +1,7 @@
 import { StatusCodes } from "http-status-codes";
-import {
-  ILogin,
-  ILoginResponse,
-  IRefreshTokenResponse,
-  IUser,
-} from "./auth.interface";
-import User from "./auth.model";
-import { comparePasswords, hashedPassword } from "./auth.utils";
+import { ILogin, ILoginResponse, IUser } from "./user.interface";
+import User from "./user.model";
+import { comparePasswords, hashedPassword } from "./user.utils";
 import AppError from "../../errors/AppError";
 import { jwtHelpers } from "../../utils/jwtHelpers";
 import config from "../../config";
@@ -33,17 +28,10 @@ const registerUser = async (payload: Partial<IUser>) => {
     config.jwt.expires_in as string
   );
 
-  const refreshToken = jwtHelpers.createToken(
-    { id: user._id, email: user.email },
-    config.jwt.refresh_secret as Secret,
-    config.jwt.refresh_expires_in as string
-  );
-
   return {
     name: user.name,
     email: user.email,
     accessToken,
-    refreshToken,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -70,50 +58,12 @@ const loginUser = async (payload: ILogin): Promise<ILoginResponse> => {
     config.jwt.expires_in as string
   );
 
-  const refreshToken = jwtHelpers.createToken(
-    { id: user._id, email: user.email },
-    config.jwt.refresh_secret as Secret,
-    config.jwt.refresh_expires_in as string
-  );
-
   return {
     accessToken,
-    refreshToken,
   };
 };
 
-// refresh token
-const refreshToken = async (token: string): Promise<IRefreshTokenResponse> => {
-  let verifiedToken;
-
-  try {
-    verifiedToken = jwtHelpers.verifyToken(
-      token,
-      config.jwt.refresh_secret as Secret
-    );
-  } catch (err) {
-    throw new AppError(StatusCodes.FORBIDDEN, "Invalid Refresh Token");
-  }
-
-  const { id } = verifiedToken;
-
-  const user = await User.findById(id).select("id email");
-
-  if (!user) {
-    throw new AppError(StatusCodes.NOT_FOUND, "User does not exist");
-  }
-
-  const newAccessToken = jwtHelpers.createToken(
-    { id: user._id, email: user.email },
-    config.jwt.secret as Secret,
-    config.jwt.expires_in as string
-  );
-
-  return { accessToken: newAccessToken };
-};
-
-export const AuthServices = {
+export const UserServices = {
   registerUser,
   loginUser,
-  refreshToken,
 };

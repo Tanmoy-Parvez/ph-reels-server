@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { StatusCodes } from "http-status-codes";
 import AppError from "../errors/AppError";
 import config from "../config";
-import User from "../modules/auth/auth.model";
+import User from "../modules/user/user.model";
 
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
   try {
