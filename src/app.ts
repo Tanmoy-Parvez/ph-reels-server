@@ -6,6 +6,7 @@ import { reelRoutes } from "./app/modules/reel/reel.routes";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/notFound";
 import { logger } from "./app/utils/logger";
+import { limiter } from "./app/middlewares/rateLimiter";
 
 const app: Application = express();
 
@@ -45,8 +46,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 //routes
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/reel", reelRoutes);
+app.use("/api/v1/auth", limiter, authRoutes);
+app.use("/api/v1/reel", limiter, reelRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
