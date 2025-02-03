@@ -12,6 +12,7 @@ PH Reels Server is the robust backend for a dynamic video reels platform, delive
   - **Maximum Duration:** 60 seconds
   - **Maximum File Size:** 50MB
 - **Optimized Caching** for quick video metadata retrieval
+- **Rate limiting** implementation
 - **Comprehensive Logging System** for API monitoring
 - **Analytics Dashboard** for tracking video views and user engagement
 - **JWT-based Authentication** supporting secure registration & login
